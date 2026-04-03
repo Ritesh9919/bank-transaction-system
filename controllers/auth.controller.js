@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken'
-import bcrypt from 'bcryptjs'
 import {User} from '../models/user.model.js'
 import {ApiError} from '../utils/api-error.js'
 import {ApiResponse} from '../utils/api-response.js'
+import {sendRegistrationEmail} from '../services/email.service.js'
 
 
 export const register = async(req, res, next)=> {
@@ -16,7 +16,9 @@ export const register = async(req, res, next)=> {
         const token = jwt.sign({userId:user._id}, process.env.JWT_SECRET, {expiresIn:"1d"})
         res.cookie("token", token)
         const registeredUser = await User.findById(user._id).select("-password")
-        return res.status(201).json(new ApiResponse(true, {user:registeredUser, token}, "User registered successfully"))
+        res.status(201).json(new ApiResponse(true, {user:registeredUser, token}, "User registered successfully"))
+        await sendRegistrationEmail(user.email, user.name)
+
     } catch (error) {
         console.error(error)
         next(error)
