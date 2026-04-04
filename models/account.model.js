@@ -5,7 +5,8 @@ const accountSchema = new mongoose.Schema({
     user:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
-        required:[true, "Account must be associate with a user"]
+        required:[true, "Account must be associate with a user"],
+        index:true
     },
     status:{
         enum:{
@@ -20,5 +21,7 @@ const accountSchema = new mongoose.Schema({
     }
 
 },{timestamps:true})
+
+accountSchema.index({user:1, status:1})
 
 export const Account = mongoose.model("Account", accountSchema)
