@@ -23,3 +23,23 @@ export const getUserAccount = async(req, res, next)=> {
         next(error)
     }
 }
+
+export const getAccountBalance = async(req, res, next)=> {
+    try {
+        const {accountId} = req.params
+        const account = await Account.findOne(
+            {
+                _id:accountId,
+                user:req.user._id
+            }
+        )
+        if(!account) {
+            next(new ApiError(404, "Account not found"))
+        }
+        const balance = await account.getBalance()
+        return res.status(200).json(new ApiResponse(true, {accountId:account._id, balance}, "Account balance fetched successfully"))
+    } catch (error) {
+        console.error(error)
+        next(error)
+    }
+}
