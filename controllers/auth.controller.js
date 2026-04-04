@@ -3,7 +3,7 @@ import {User} from '../models/user.model.js'
 import {ApiError} from '../utils/api-error.js'
 import {ApiResponse} from '../utils/api-response.js'
 import {sendRegistrationEmail} from '../services/email.service.js'
-
+import {TokenBlackList} from '../models/blacklist.model.js'
 
 export const register = async(req, res, next)=> {
     try {
@@ -45,6 +45,21 @@ export const login = async(req, res, next)=> {
         const loggedInUser = await User.findById(isExist._id).select("-password")
         return res.status(201).json(new ApiResponse(true, {user:loggedInUser, token}, "User Login successfully"))
 
+    } catch (error) {
+        console.error(error)
+        next(error)
+    }
+}
+
+export const logout = async(req, res, next)=> {
+    try {
+        const token = req.cookies.token || req.headers.authorization?.split[" "][1]
+        if(!token) {
+            return res.status(200).json({message:"Logout successfully"})
+        }
+        res.clearCookie("token")
+        await TokenBlackList.create({token})
+        return res.status(200).json(new ApiResponse(true, {}, "Logout successfully"))
     } catch (error) {
         console.error(error)
         next(error)

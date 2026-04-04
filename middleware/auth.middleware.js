@@ -1,10 +1,15 @@
 import {ApiError} from '../utils/api-error.js'
 import {User} from '../models/user.model.js'
 import jwt from 'jsonwebtoken'
+import { TokenBlackList } from '../models/blacklist.model.js'
 
 export const auth = async(req, res, next)=> {
     const token = req.cookies.token || req.headers.authorization?.split(" ")[1]
     if(!token) {
+        next(new ApiError(401, "Unauthorized"))
+    }
+    const isBlacklisted = await TokenBlackList.findOne({token})
+    if(isBlacklisted) {
         next(new ApiError(401, "Unauthorized"))
     }
     try {
@@ -24,6 +29,10 @@ export const authSystemUser = async(req, res, next)=> {
         if(!token) {
             next(new ApiError(401, "Unauthorized"))
         }
+        const isBlacklisted = await TokenBlackList.findOne({token})
+    if(isBlacklisted) {
+        next(new ApiError(401, "Unauthorized"))
+    }
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         const user = await User.findById(decoded.userId).select("+systemUser")
         if(!user.systemUser) {

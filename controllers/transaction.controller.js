@@ -156,7 +156,7 @@ export const createInitialFundsTransaction = async(req, res, next)=> {
     const toUserAccount = await Account.findOne({
         _id: toAccount,
     })
-    console.log(toUserAccount)
+    
 
     if (!toUserAccount) {
         next(new ApiError(400, "Invalid account"))
